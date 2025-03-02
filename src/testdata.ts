@@ -5,15 +5,13 @@ interface Exercise {
 }
 
 interface Workout {
-  id: string;
   name: string;
   exercises: Exercise[];
 }
 
 const workouts: Workout[] = [
   {
-    id: "abc",
-    name: "Upper Body StrengthFFFF",
+    name: "5x5 Stronglifts",
     exercises: [
       { name: "Bench Press", reps: 10, sets: 3 },
       { name: "Pull-Ups", reps: 8, sets: 3 },
@@ -21,7 +19,6 @@ const workouts: Workout[] = [
     ],
   },
   {
-    id: "def",
     name: "Lower Body Power",
     exercises: [
       { name: "Squats", reps: 12, sets: 3 },

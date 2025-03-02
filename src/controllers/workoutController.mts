@@ -4,6 +4,7 @@ import { send400 } from "../utils/send400.mjs";
 // import { getDb } from "../db/dbcon.mjs";
 import { WorkoutModel } from "../models/workout.mjs";
 import testworkouts from "../testdata.js";
+import mongoose from "mongoose";
 
 //GET
 export function getTestWorkouts(req: Request, res: Response): void {
@@ -18,6 +19,12 @@ export function getTestWorkouts(req: Request, res: Response): void {
 }
 export async function getMongoWorkouts(req: Request, res: Response) {
   try {
+    console.log(
+      mongoose.connection.db
+        ? `Connected to: ${mongoose.connection.db.databaseName}`
+        : "Not connected to a db"
+    );
+
     const workouts = await WorkoutModel.find({});
     res.status(200).json(workouts);
   } catch (error) {

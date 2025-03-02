@@ -6,8 +6,8 @@ import {
 
 const router = express.Router();
 
-// router.get("/", getMongoWorkouts);
-router.get("/", getTestWorkouts);
+router.get("/", getMongoWorkouts);
+// router.get("/", getTestWorkouts);
 // router.post("/", createWorkout);
 
 export default router;

@@ -11,9 +11,9 @@ app.use(logger);
 app.use(express.json());
 app.use("/workouts", workoutRoutes);
 
-// connectToMongoDB()
-//   .then(() => {
-//     startServer(PORT);
-//   })
-//   .catch(console.error);
-startServer(PORT);
+connectToMongoDB()
+  .then(() => {
+    startServer(PORT);
+  })
+  .catch(console.error);
+// startServer(PORT);
