@@ -31,7 +31,60 @@ export async function getMongoWorkouts(req: Request, res: Response) {
     res.status(500).json({ error: (error as Error).message });
   }
 }
+// POST
+export async function createMongoWorkout(req: Request, res: Response) {
+  try {
+    const { name, exercises } = req.body;
 
+    // Validate required fields
+    if (!name || typeof name !== "string") {
+      send400(res, { message: "Name is required and must be a string" });
+      return;
+    }
+
+    // Validate exercises array
+    if (!Array.isArray(exercises)) {
+      send400(res, { message: "Exercises must be an array" });
+      return;
+    }
+
+    // Validate each exercise
+    const validExercises = exercises.every(
+      (exercise) =>
+        exercise.name &&
+        typeof exercise.name === "string" &&
+        typeof exercise.reps === "number" &&
+        typeof exercise.sets === "number"
+    );
+
+    if (!validExercises) {
+      send400(res, {
+        message:
+          "Each exercise must have a name (string), reps (number), and sets (number)",
+      });
+      return;
+    }
+
+    // Create new workout document
+    const newWorkout = new WorkoutModel({
+      name,
+      exercises,
+    });
+
+    // Save to database
+    const savedWorkout = await newWorkout.save();
+    res.status(201).json(savedWorkout);
+  } catch (error) {
+    if (error instanceof mongoose.Error.ValidationError) {
+      send400(res, { message: error.message });
+      return;
+    }
+    res.status(500).json({
+      message: "Error creating workout",
+      error: (error as Error).message,
+    });
+  }
+}
 //POST
 // export function createWorkout(req: Request, res: Response): void {
 //   try {
