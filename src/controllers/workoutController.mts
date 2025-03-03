@@ -37,31 +37,8 @@ export async function createMongoWorkout(req: Request, res: Response) {
     const { name, exercises } = req.body;
 
     // Validate required fields
-    if (!name || typeof name !== "string") {
-      send400(res, { message: "Name is required and must be a string" });
-      return;
-    }
-
-    // Validate exercises array
-    if (!Array.isArray(exercises)) {
-      send400(res, { message: "Exercises must be an array" });
-      return;
-    }
-
-    // Validate each exercise
-    const validExercises = exercises.every(
-      (exercise) =>
-        exercise.name &&
-        typeof exercise.name === "string" &&
-        typeof exercise.reps === "number" &&
-        typeof exercise.sets === "number"
-    );
-
-    if (!validExercises) {
-      send400(res, {
-        message:
-          "Each exercise must have a name (string), reps (number), and sets (number)",
-      });
+    if (!name || !Array.isArray(exercises)) {
+      send400(res, { message: "Name and exercises array are required" });
       return;
     }
 
@@ -74,6 +51,11 @@ export async function createMongoWorkout(req: Request, res: Response) {
     // Save to database
     const savedWorkout = await newWorkout.save();
     res.status(201).json(savedWorkout);
+
+    if (mongoose.connection.db) {
+      console.log(`Saving to database: ${mongoose.connection.db.databaseName}`);
+      console.log(`Saving to collection: ${WorkoutModel.collection.name}`);
+    }
   } catch (error) {
     if (error instanceof mongoose.Error.ValidationError) {
       send400(res, { message: error.message });
@@ -85,68 +67,3 @@ export async function createMongoWorkout(req: Request, res: Response) {
     });
   }
 }
-//POST
-// export function createWorkout(req: Request, res: Response): void {
-//   try {
-//     const { name, exercises } = req.body;
-//     if (!name || typeof name !== "string") {
-//       send400(res, { message: "Name is required" });
-//       return;
-//     }
-
-//     if (!Array.isArray(exercises)) {
-//       send400(res, { message: "Exercises must be an array" });
-//       return;
-//     }
-//     const validExercises = exercises.every(
-//       (exercise) =>
-//         exercise.name &&
-//         typeof exercise.name === "string" &&
-//         typeof exercise.reps === "number" &&
-//         typeof exercise.sets === "number"
-//     );
-
-//     if (!validExercises) {
-//       send400(res, {
-//         message:
-//           "Each exercise must have a name(string), reps(number), and sets(number)",
-//       });
-//       return;
-//     }
-//     const newWorkout: Workout = {
-//       id: uuidv4(),
-//       name: req.body.name,
-//       exercises: req.body.exercises || [],
-//     };
-
-//     workouts.push(newWorkout);
-//     res.status(201).json(newWorkout);
-//   } catch (error) {
-//     res.status(500).json({
-//       message: "Error creating workout",
-//       error: (error as Error).message,
-//     });
-//   }
-// }
-
-// export const WORKOUTS = {
-//   get: getAllWorkouts,
-//   post: createWorkout,
-// };
-
-// app.get("/api", (req, res) => {
-//   const searchQuery = req.query.q?.toString().toLowerCase() || "";
-
-//   if (!searchQuery) {
-//     res.json(workouts);
-//     return;
-//   }
-//   const result = workouts.filter((workout) => {
-//     return (
-//       workout.exercises.filter((exercise) => {
-//         return exercise.name.toLowerCase().includes(searchQuery);
-//       }).length > 0
-//     );
-//   });
-//   res.json(result);
-// });

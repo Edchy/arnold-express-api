@@ -1,5 +1,7 @@
 import mongoose from "mongoose";
 
+const collectionName = "workout";
+
 const exerciseSchema = new mongoose.Schema(
   {
     name: {
@@ -16,7 +18,7 @@ const exerciseSchema = new mongoose.Schema(
       required: true,
     },
   },
-  { _id: false }
+  { _id: false, strict: true }
 );
 
 const workoutSchema = new mongoose.Schema(
@@ -33,4 +35,4 @@ const workoutSchema = new mongoose.Schema(
   }
 );
 
-export const WorkoutModel = mongoose.model("Workout", workoutSchema);
+export const WorkoutModel = mongoose.model(collectionName, workoutSchema);

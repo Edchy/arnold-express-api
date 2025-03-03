@@ -63,4 +63,7 @@ db.workouts.insertOne({
 
 // Delete a document
 db.workouts.deleteOne({ name: "Test Workout" })
+
+// Remove all documents from the workouts collection
+db.workouts.deleteMany({})
 ```
