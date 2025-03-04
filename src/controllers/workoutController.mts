@@ -1,4 +1,4 @@
-import { Request, Response } from "express";
+import { RequestHandler } from "express";
 import { v4 as uuidv4 } from "uuid";
 import { send400 } from "../utils/helpers.mjs";
 // import { getDb } from "../db/dbcon.mjs";
@@ -7,7 +7,7 @@ import testworkouts from "../testdata.js";
 import mongoose from "mongoose";
 
 //GET
-export function getTestWorkouts(req: Request, res: Response): void {
+export const getTestWorkouts: RequestHandler = (req, res) => {
   try {
     res.status(200).json(testworkouts);
   } catch (error) {
@@ -16,8 +16,8 @@ export function getTestWorkouts(req: Request, res: Response): void {
       error: (error as Error).message,
     });
   }
-}
-export async function getMongoWorkouts(req: Request, res: Response) {
+};
+export const getMongoWorkouts: RequestHandler = async (req, res) => {
   try {
     console.log(
       mongoose.connection.db
@@ -30,9 +30,9 @@ export async function getMongoWorkouts(req: Request, res: Response) {
   } catch (error) {
     res.status(500).json({ error: (error as Error).message });
   }
-}
+};
 // POST
-export async function createMongoWorkout(req: Request, res: Response) {
+export const createMongoWorkout: RequestHandler = async (req, res) => {
   try {
     const { name, exercises } = req.body;
 
@@ -72,4 +72,4 @@ export async function createMongoWorkout(req: Request, res: Response) {
       error: (error as Error).message,
     });
   }
-}
+};
