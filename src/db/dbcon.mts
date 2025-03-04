@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import { getMongoURI } from "../models/types.mjs";
+import { getMongoURI } from "../utils/helpers.mjs";
 
 export default async function connectToMongoDB(): Promise<void> {
   try {

@@ -66,4 +66,16 @@ db.workouts.deleteOne({ name: "Test Workout" })
 
 // Remove all documents from the workouts collection
 db.workouts.deleteMany({})
+
+// Create an index on the name field
+db.workouts.createIndex({ name: 1 })
+
+// Index on both name and createdAt fields
+db.workouts.createIndex({ name: 1, createdAt: -1 })
+
+// Create a text index for searching workout descriptions
+db.workouts.createIndex({ description: "text" })
+
+// Then search with:
+db.workouts.find({ $text: { $search: "cardio strength" } })
 ```

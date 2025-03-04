@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { v4 as uuidv4 } from "uuid";
-import { send400 } from "../utils/send400.mjs";
+import { send400 } from "../utils/helpers.mjs";
 // import { getDb } from "../db/dbcon.mjs";
 import { WorkoutModel } from "../models/workout.mjs";
 import testworkouts from "../testdata.js";
@@ -51,6 +51,12 @@ export async function createMongoWorkout(req: Request, res: Response) {
     // Save to database
     const savedWorkout = await newWorkout.save();
     res.status(201).json(savedWorkout);
+
+    // Create and save in one step
+    // const savedWorkout = await WorkoutModel.create({
+    //   name,
+    //   exercises,
+    // });
 
     if (mongoose.connection.db) {
       console.log(`Saving to database: ${mongoose.connection.db.databaseName}`);

@@ -8,7 +8,7 @@ import {
 const router = express.Router();
 
 router.get("/", getMongoWorkouts);
-// router.get("/", getTestWorkouts);
 router.post("/", createMongoWorkout);
+// router.get("/", getTestWorkouts);
 
 export default router;
