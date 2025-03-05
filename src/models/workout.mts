@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 
-const collectionName = "workout";
+// export const workoutCollection = "workout";
 
 const exerciseSchema = new mongoose.Schema(
   {
@@ -16,6 +16,10 @@ const exerciseSchema = new mongoose.Schema(
     sets: {
       type: Number,
       required: true,
+    },
+    weight: {
+      type: Number,
+      required: false,
     },
   },
   { _id: false, strict: true }
@@ -35,4 +39,4 @@ const workoutSchema = new mongoose.Schema(
   }
 );
 
-export const WorkoutModel = mongoose.model(collectionName, workoutSchema);
+export const WorkoutModel = mongoose.model("workout", workoutSchema);
