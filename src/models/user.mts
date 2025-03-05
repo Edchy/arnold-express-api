@@ -1,7 +1,19 @@
-import mongoose from "mongoose";
+import mongoose, { Document } from "mongoose";
 // import { workoutCollection } from "./workout.mjs";
 // const userCollection = "user";
-
+interface IUser extends Document {
+  username: string;
+  password: string;
+  userWorkouts: mongoose.Types.ObjectId[];
+  createdAt: Date;
+  updatedAt: Date;
+  // Add the method definition here
+  toPublicJSON(): {
+    _id: mongoose.Types.ObjectId;
+    username: string;
+    userWorkouts: mongoose.Types.ObjectId[];
+  };
+}
 /**
  * @swagger
  * components:
@@ -17,6 +29,9 @@ import mongoose from "mongoose";
  *         username:
  *           type: string
  *           description: The user's unique username
+ *         password:
+ *           type: string
+ *           description: User's password (will be hashed)
  *         userWorkouts:
  *           type: array
  *           items:
@@ -30,6 +45,21 @@ import mongoose from "mongoose";
  *           type: string
  *           format: date-time
  *           description: When the user was last updated
+ *     PublicUser:
+ *       type: object
+ *       description: User data without sensitive information (returned by toPublicJSON)
+ *       properties:
+ *         _id:
+ *           type: string
+ *           description: Auto-generated MongoDB ID
+ *         username:
+ *           type: string
+ *           description: The user's unique username
+ *         userWorkouts:
+ *           type: array
+ *           items:
+ *             type: string
+ *           description: Array of workout IDs associated with the user
  */
 const userSchema = new mongoose.Schema(
   {
@@ -39,7 +69,10 @@ const userSchema = new mongoose.Schema(
       unique: true,
       trim: true,
     },
-    // We'll add password later when we implement authentication
+    password: {
+      type: String,
+      required: true,
+    },
     userWorkouts: [
       {
         type: mongoose.Schema.Types.ObjectId,
@@ -52,4 +85,13 @@ const userSchema = new mongoose.Schema(
   }
 );
 
-export const UserModel = mongoose.model("user", userSchema);
+userSchema.methods.toPublicJSON = function (this: IUser) {
+  return {
+    _id: this._id,
+    username: this.username,
+    // Add any other non-sensitive fields you want to expose
+    userWorkouts: this.userWorkouts,
+  };
+};
+
+export const UserModel = mongoose.model<IUser>("user", userSchema);

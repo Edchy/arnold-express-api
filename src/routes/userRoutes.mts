@@ -3,7 +3,18 @@ import {
   createUser,
   getUserById,
   getMongoUsers,
+  login,
 } from "../controllers/userController.mjs";
+
+const router = express.Router();
+
+/**
+ * @swagger
+ * tags:
+ *   name: Users
+ *   description: User management
+ */
+
 /**
  * @swagger
  * /users:
@@ -18,7 +29,7 @@ import {
  *             schema:
  *               type: array
  *               items:
- *                 $ref: '#/components/schemas/User'
+ *                 $ref: '#/components/schemas/PublicUser'
  *
  *   post:
  *     summary: Create a new user
@@ -40,7 +51,7 @@ import {
  *       400:
  *         description: Username already taken or invalid request
  */
-const router = express.Router();
+
 router.post("/", createUser);
 router.get("/", getMongoUsers);
 
@@ -59,9 +70,51 @@ router.get("/", getMongoUsers);
  *     responses:
  *       200:
  *         description: User details
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/PublicUser'
  *       404:
  *         description: User not found
  */
 router.get("/:x", getUserById);
+
+/**
+ * @swagger
+ * /users/login:
+ *   post:
+ *     summary: Login a user
+ *     tags: [Users]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - username
+ *               - password
+ *             properties:
+ *               username:
+ *                 type: string
+ *               password:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Login successful
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                 user:
+ *                   $ref: '#/components/schemas/PublicUser'
+ *       401:
+ *         description: Invalid credentials
+ */
+
+router.post("/login", login);
 
 export default router;

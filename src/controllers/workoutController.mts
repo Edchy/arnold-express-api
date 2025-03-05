@@ -31,6 +31,25 @@ export const getMongoWorkouts: RequestHandler = async (req, res) => {
     res.status(500).json({ error: (error as Error).message });
   }
 };
+// GET by ID
+export const getMongoWorkoutById: RequestHandler = async (req, res) => {
+  try {
+    const workoutId = req.params.id;
+    const workout = await WorkoutModel.findById(workoutId);
+
+    if (!workout) {
+      res.status(404).json({ message: "Workout not found" });
+      return;
+    }
+
+    res.status(200).json(workout);
+  } catch (error) {
+    res.status(500).json({
+      message: "Error finding workout",
+      error: (error as Error).message,
+    });
+  }
+};
 // POST
 export const createMongoWorkout: RequestHandler = async (req, res) => {
   try {

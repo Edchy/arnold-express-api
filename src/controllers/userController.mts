@@ -6,10 +6,10 @@ import mongoose from "mongoose";
 // Create a new user
 export const createUser: RequestHandler = async (req, res) => {
   try {
-    const { username } = req.body;
+    const { username, password } = req.body;
 
-    if (!username) {
-      res.status(400).json({ message: "Username is required" });
+    if (!username || !password) {
+      res.status(400).json({ message: "Username and password are required" });
       return;
     }
     const existingUser = await UserModel.findOne({ username });
@@ -24,11 +24,12 @@ export const createUser: RequestHandler = async (req, res) => {
     );
     const newUser = new UserModel({
       username,
+      password,
       userWorkouts: defaultWorkoutIds,
     });
-    const savedUser = await newUser.save();
+    await newUser.save();
 
-    res.status(201).json(savedUser);
+    res.status(201).json(newUser.toPublicJSON());
   } catch (error) {
     res.status(500).json({
       message: "Error creating user",
@@ -62,6 +63,50 @@ export const getUserById: RequestHandler = async (req, res) => {
       message: "Error finding user",
       error: (error as Error).message,
       x: req.params.x,
+    });
+  }
+};
+
+// Add login functionality
+export const login: RequestHandler = async (req, res) => {
+  try {
+    const { username, password } = req.body;
+
+    if (!username || !password) {
+      res.status(400).json({ message: "Username and password are required" });
+      return;
+    }
+
+    const user = await UserModel.findOne({ username });
+
+    if (!user) {
+      res.status(401).json({ message: "Invalid credentials" });
+      return;
+    }
+
+    // Simple password check (plain text for now)
+    if (user.password !== password) {
+      res.status(401).json({ message: "Invalid credentials" });
+      return;
+    }
+
+    // Return user without password
+    const userResponse = {
+      _id: user._id,
+      username: user.username,
+      userWorkouts: user.userWorkouts,
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt,
+    };
+
+    res.status(200).json({
+      message: "Login successful",
+      user: user.toPublicJSON(),
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: "Error during login",
+      error: (error as Error).message,
     });
   }
 };
