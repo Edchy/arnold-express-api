@@ -1,34 +1,48 @@
-import { RequestHandler } from "express";
+import e, { RequestHandler } from "express";
 import { UserModel } from "../models/user.mjs";
 import { DEFAULT_WORKOUT_IDS } from "../utils/constants.mjs";
+import { v4 as uuidv4 } from "uuid";
 import mongoose from "mongoose";
+import { sendBadRequest } from "../utils/helpers.mjs";
+import bcrypt from "bcrypt";
 
 // Create a new user
-export const createUser: RequestHandler = async (req, res) => {
+export const createMongoUser: RequestHandler = async (req, res) => {
   try {
     const { username, password } = req.body;
 
-    if (!username || !password) {
-      res.status(400).json({ message: "Username and password are required" });
-      return;
-    }
-    const existingUser = await UserModel.findOne({ username });
-    if (existingUser) {
-      res.status(400).json({ message: "Username already taken" });
+    if (!username) {
+      sendBadRequest(res, "Username is required");
       return;
     }
 
-    // Convert string IDs to ObjectIds
+    if (password.length < 6) {
+      sendBadRequest(res, "Password must be at least 6 characters long");
+      return;
+    }
+
+    if (await UserModel.findOne({ username })) {
+      sendBadRequest(res, "Username already taken");
+      return;
+    }
+    // Hash the password
+    const saltRounds = 1; // higher number = more secure but slower
+    const hashedPassword = await bcrypt.hash(password, saltRounds);
+
+    // all new users will have the default workouts
+    // Convert string IDs to mongoose ObjectIds
     const defaultWorkoutIds = DEFAULT_WORKOUT_IDS.map(
       (id) => new mongoose.Types.ObjectId(id)
     );
-    const newUser = new UserModel({
+
+    // Create a new user and save it to the database
+    const newUser = await UserModel.create({
       username,
-      password,
+      password: hashedPassword,
       userWorkouts: defaultWorkoutIds,
     });
-    await newUser.save();
 
+    // Send the new user as a response but only the public fields
     res.status(201).json(newUser.toPublicJSON());
   } catch (error) {
     res.status(500).json({
@@ -40,8 +54,10 @@ export const createUser: RequestHandler = async (req, res) => {
 // get all
 export const getMongoUsers: RequestHandler = async (req, res) => {
   try {
-    const workouts = await UserModel.find({}).populate("userWorkouts");
-    res.status(200).json(workouts);
+    const users = await UserModel.find({}).populate("userWorkouts");
+    const publicUsers = users.map((user) => user.toPublicJSON());
+    res.status(200).json(publicUsers);
+    // res.status(200).json(users);
   } catch (error) {
     res.status(500).json({ error: (error as Error).message });
   }
@@ -49,7 +65,7 @@ export const getMongoUsers: RequestHandler = async (req, res) => {
 // Get a user by ID
 export const getUserById: RequestHandler = async (req, res) => {
   try {
-    const userId = req.params.x;
+    const userId = req.params.id;
     const user = await UserModel.findById(userId).populate("userWorkouts");
 
     if (!user) {
@@ -62,7 +78,7 @@ export const getUserById: RequestHandler = async (req, res) => {
     res.status(500).json({
       message: "Error finding user",
       error: (error as Error).message,
-      x: req.params.x,
+      id: req.params.id,
     });
   }
 };
@@ -78,26 +94,17 @@ export const login: RequestHandler = async (req, res) => {
     }
 
     const user = await UserModel.findOne({ username });
-
+    const errorResponse = { message: "Wrong username and/or password" };
     if (!user) {
-      res.status(401).json({ message: "Invalid credentials" });
+      res.status(401).json(errorResponse);
       return;
     }
 
-    // Simple password check (plain text for now)
-    if (user.password !== password) {
-      res.status(401).json({ message: "Invalid credentials" });
+    const passwordMatch = await bcrypt.compare(password, user.password);
+    if (!passwordMatch) {
+      res.status(401).json(errorResponse);
       return;
     }
-
-    // Return user without password
-    const userResponse = {
-      _id: user._id,
-      username: user.username,
-      userWorkouts: user.userWorkouts,
-      createdAt: user.createdAt,
-      updatedAt: user.updatedAt,
-    };
 
     res.status(200).json({
       message: "Login successful",

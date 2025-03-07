@@ -10,8 +10,9 @@ dotenv.config();
  * @param res - The response object to send the status and message.
  * @param message - The message to be sent in the response body.
  */
-export const send400 = (res: Response, message: Object) => {
+export const sendBadRequest = (res: Response, message: string | Object) => {
   res.status(400).json(message);
+  console.log(message);
 };
 
 /**

@@ -1,57 +1,15 @@
 import mongoose from "mongoose";
 
-// export const workoutCollection = "workout";
-
-/**
- * @swagger
- * components:
- *   schemas:
- *     Exercise:
- *       type: object
- *       required:
- *         - name
- *         - reps
- *         - sets
- *       properties:
- *         name:
- *           type: string
- *           description: The name of the exercise
- *         reps:
- *           type: number
- *           description: Number of repetitions
- *         sets:
- *           type: number
- *           description: Number of sets
- *         weight:
- *           type: number
- *           description: Weight used (optional)
- *
- *     Workout:
- *       type: object
- *       required:
- *         - name
- *         - exercises
- *       properties:
- *         _id:
- *           type: string
- *           description: Auto-generated MongoDB ID
- *         name:
- *           type: string
- *           description: The name of the workout
- *         exercises:
- *           type: array
- *           items:
- *             $ref: '#/components/schemas/Exercise'
- *           description: List of exercises in this workout
- *         createdAt:
- *           type: string
- *           format: date-time
- *           description: When the workout was created
- *         updatedAt:
- *           type: string
- *           format: date-time
- *           description: When the workout was last updated
- */
+// Data Transfer Object (DTO)
+export type WorkoutDto = {
+  name: string;
+  exercises: {
+    name: string;
+    reps: number;
+    sets: number;
+    weight?: number;
+  }[];
+};
 
 const exerciseSchema = new mongoose.Schema(
   {
@@ -70,7 +28,7 @@ const exerciseSchema = new mongoose.Schema(
     },
     weight: {
       type: Number,
-      required: false,
+      required: true,
     },
   },
   { _id: false, strict: true }
@@ -78,6 +36,10 @@ const exerciseSchema = new mongoose.Schema(
 
 const workoutSchema = new mongoose.Schema(
   {
+    id: {
+      type: String,
+      required: false,
+    },
     name: {
       type: String,
       required: true,

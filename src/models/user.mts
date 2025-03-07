@@ -1,68 +1,31 @@
-import mongoose, { Document } from "mongoose";
-// import { workoutCollection } from "./workout.mjs";
-// const userCollection = "user";
+import { Document, Schema, Types, model } from "mongoose";
+import { v4 as uuidv4 } from "uuid";
+
 interface IUser extends Document {
+  id: string;
   username: string;
   password: string;
-  userWorkouts: mongoose.Types.ObjectId[];
+  userWorkouts: Types.ObjectId[];
   createdAt: Date;
   updatedAt: Date;
-  // Add the method definition here
+
   toPublicJSON(): {
-    _id: mongoose.Types.ObjectId;
+    // _id: Types.ObjectId;
+    id: string;
+    // userWorkouts: Types.ObjectId[];
     username: string;
-    userWorkouts: mongoose.Types.ObjectId[];
   };
 }
-/**
- * @swagger
- * components:
- *   schemas:
- *     User:
- *       type: object
- *       required:
- *         - username
- *       properties:
- *         _id:
- *           type: string
- *           description: Auto-generated MongoDB ID
- *         username:
- *           type: string
- *           description: The user's unique username
- *         password:
- *           type: string
- *           description: User's password (will be hashed)
- *         userWorkouts:
- *           type: array
- *           items:
- *             type: string
- *           description: Array of workout IDs associated with the user
- *         createdAt:
- *           type: string
- *           format: date-time
- *           description: When the user was created
- *         updatedAt:
- *           type: string
- *           format: date-time
- *           description: When the user was last updated
- *     PublicUser:
- *       type: object
- *       description: User data without sensitive information (returned by toPublicJSON)
- *       properties:
- *         _id:
- *           type: string
- *           description: Auto-generated MongoDB ID
- *         username:
- *           type: string
- *           description: The user's unique username
- *         userWorkouts:
- *           type: array
- *           items:
- *             type: string
- *           description: Array of workout IDs associated with the user
- */
-const userSchema = new mongoose.Schema(
+
+export type Dto = {
+  username: string;
+};
+
+const userSchema = new Schema(
   {
+    id: {
+      type: String,
+    },
     username: {
       type: String,
       required: true,
@@ -75,8 +38,8 @@ const userSchema = new mongoose.Schema(
     },
     userWorkouts: [
       {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "workout", // This refers to your workout collection
+        type: Schema.Types.ObjectId,
+        ref: "workout", // reference to the workout model (collection)
       },
     ],
   },
@@ -85,13 +48,26 @@ const userSchema = new mongoose.Schema(
   }
 );
 
+// pre-save hook to generate a UUID for each new user on creation
+// runs on save() and create()
+// doesnt run on insertMany() unless rawResult option is set to false
+// updateOne() and findByIdAndUpdate() dont trigger this middleware
+userSchema.pre("save", function (this: IUser, next) {
+  if (this.isNew) {
+    this.id = uuidv4();
+  }
+  next();
+});
+
+// Method to expose only the public fields of a user
 userSchema.methods.toPublicJSON = function (this: IUser) {
   return {
-    _id: this._id,
+    // Add exposable fields here
     username: this.username,
-    // Add any other non-sensitive fields you want to expose
-    userWorkouts: this.userWorkouts,
+    // _id: this._id,
+    id: this.id,
+    // userWorkouts: this.userWorkouts,
   };
 };
 
-export const UserModel = mongoose.model<IUser>("user", userSchema);
+export const UserModel = model<IUser>("user", userSchema);

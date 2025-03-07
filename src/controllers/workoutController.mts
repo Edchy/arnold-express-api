@@ -1,22 +1,22 @@
 import { RequestHandler } from "express";
-// import { v4 as uuidv4 } from "uuid";
-import { send400 } from "../utils/helpers.mjs";
+import { v4 as uuidv4 } from "uuid";
+import { sendBadRequest } from "../utils/helpers.mjs";
 // import { getDb } from "../db/dbcon.mjs";
-import { WorkoutModel } from "../models/workout.mjs";
+import { WorkoutDto, WorkoutModel } from "../models/workout.mjs";
 import testworkouts from "../testdata.js";
 import mongoose from "mongoose";
 
 //GET
-export const getTestWorkouts: RequestHandler = (req, res) => {
-  try {
-    res.status(200).json(testworkouts);
-  } catch (error) {
-    res.status(500).json({
-      message: "Error fetching workouts",
-      error: (error as Error).message,
-    });
-  }
-};
+// export const getTestWorkouts: RequestHandler = (req, res) => {
+//   try {
+//     res.status(200).json(testworkouts);
+//   } catch (error) {
+//     res.status(500).json({
+//       message: "Error fetching workouts",
+//       error: (error as Error).message,
+//     });
+//   }
+// };
 export const getMongoWorkouts: RequestHandler = async (req, res) => {
   try {
     console.log(
@@ -26,6 +26,18 @@ export const getMongoWorkouts: RequestHandler = async (req, res) => {
     );
 
     const workouts = await WorkoutModel.find({});
+    // const dtos = workouts.map(
+    //   (workout) =>
+    //     ({
+    //       name: workout.name,
+    //       exercises: workout.exercises.map((exercise) => ({
+    //         name: exercise.name,
+    //         reps: exercise.reps,
+    //         sets: exercise.sets,
+    //         weight: exercise.weight ?? undefined,
+    //       })),
+    //     } satisfies WorkoutDto)
+    // );
     res.status(200).json(workouts);
   } catch (error) {
     res.status(500).json({ error: (error as Error).message });
@@ -57,12 +69,13 @@ export const createMongoWorkout: RequestHandler = async (req, res) => {
 
     // Validate required fields
     if (!name || !Array.isArray(exercises)) {
-      send400(res, { message: "Name and exercises array are required" });
+      sendBadRequest(res, { message: "Name and exercises array are required" });
       return;
     }
 
     // Create new workout document
     const newWorkout = new WorkoutModel({
+      id: uuidv4(),
       name,
       exercises,
     });
@@ -83,7 +96,7 @@ export const createMongoWorkout: RequestHandler = async (req, res) => {
     }
   } catch (error) {
     if (error instanceof mongoose.Error.ValidationError) {
-      send400(res, { message: error.message });
+      sendBadRequest(res, { message: error.message });
       return;
     }
     res.status(500).json({
