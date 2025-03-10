@@ -1,7 +1,7 @@
 import express, { json } from "express";
 import startServer from "./utils/startServer.mjs";
 import workoutRoutes from "./routes/workoutRoutes.mjs";
-import userRoutes, { USERS_ROUTE } from "./routes/userRoutes.mjs";
+import userRoutes from "./routes/userRoutes.mjs";
 import { logger } from "./middleware/logger.mjs";
 import connectToMongoDB from "./dbcon.mjs";
 import { PORT } from "./utils/constants.mjs";
@@ -21,7 +21,7 @@ app.use(json());
 // app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(specs));
 
 app.use("/workouts", workoutRoutes);
-app.use(USERS_ROUTE, userRoutes);
+app.use("/users", userRoutes);
 
 connectToMongoDB()
   .then(() => {

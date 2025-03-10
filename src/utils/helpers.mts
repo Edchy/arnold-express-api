@@ -15,6 +15,15 @@ export const sendBadRequest = (res: Response, message: string | Object) => {
   console.log(message);
 };
 
+export const sendStatus = (
+  status: number,
+  res: Response,
+  message: string | Object
+) => {
+  res.status(status).json(message);
+  console.log(message);
+};
+
 /**
  * Retrieves the MongoDB URI from the environment variables.
  *

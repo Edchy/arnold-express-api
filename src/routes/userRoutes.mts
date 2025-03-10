@@ -1,17 +1,17 @@
 import { Router } from "express";
 import {
   createMongoUser,
-  getUserById,
+  getMongoUserById,
   getMongoUsers,
   login,
 } from "../controllers/userController.mjs";
+import { authLimiter } from "../middleware/rateLimiters.mjs";
+import { authenticateJWT } from "../middleware/jwt.mjs";
 
-//
-export const USERS_ROUTE = "/users";
 const userRouter = Router();
+userRouter.get("/", authenticateJWT, getMongoUsers);
+userRouter.get("/:id", authenticateJWT, getMongoUserById);
 userRouter.post("/", createMongoUser);
-userRouter.get("/", getMongoUsers);
-userRouter.get("/:id", getUserById);
-userRouter.post("/login", login);
+userRouter.post("/login", authLimiter, login);
 
 export default userRouter;

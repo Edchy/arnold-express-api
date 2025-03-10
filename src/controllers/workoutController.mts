@@ -1,6 +1,6 @@
 import { RequestHandler } from "express";
 import { v4 as uuidv4 } from "uuid";
-import { sendBadRequest } from "../utils/helpers.mjs";
+import { sendBadRequest, sendStatus } from "../utils/helpers.mjs";
 // import { getDb } from "../db/dbcon.mjs";
 import { WorkoutDto, WorkoutModel } from "../models/workout.mjs";
 import testworkouts from "../testdata.js";
@@ -26,19 +26,19 @@ export const getMongoWorkouts: RequestHandler = async (req, res) => {
     );
 
     const workouts = await WorkoutModel.find({});
-    // const dtos = workouts.map(
-    //   (workout) =>
-    //     ({
-    //       name: workout.name,
-    //       exercises: workout.exercises.map((exercise) => ({
-    //         name: exercise.name,
-    //         reps: exercise.reps,
-    //         sets: exercise.sets,
-    //         weight: exercise.weight ?? undefined,
-    //       })),
-    //     } satisfies WorkoutDto)
-    // );
-    res.status(200).json(workouts);
+    const workoutsDTO = workouts.map(
+      (workout) =>
+        ({
+          name: workout.name,
+          exercises: workout.exercises.map((exercise) => ({
+            name: exercise.name,
+            reps: exercise.reps,
+            sets: exercise.sets,
+            weight: exercise.weight ?? undefined,
+          })),
+        } satisfies WorkoutDto)
+    );
+    res.status(200).json(workoutsDTO);
   } catch (error) {
     res.status(500).json({ error: (error as Error).message });
   }

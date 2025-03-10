@@ -1,10 +1,11 @@
-import e, { RequestHandler } from "express";
+import { RequestHandler } from "express";
 import { UserModel } from "../models/user.mjs";
 import { DEFAULT_WORKOUT_IDS } from "../utils/constants.mjs";
 import { v4 as uuidv4 } from "uuid";
 import mongoose from "mongoose";
 import { sendBadRequest } from "../utils/helpers.mjs";
 import bcrypt from "bcrypt";
+import { generateToken } from "../utils/auth.mjs";
 
 // Create a new user
 export const createMongoUser: RequestHandler = async (req, res) => {
@@ -63,7 +64,7 @@ export const getMongoUsers: RequestHandler = async (req, res) => {
   }
 };
 // Get a user by ID
-export const getUserById: RequestHandler = async (req, res) => {
+export const getMongoUserById: RequestHandler = async (req, res) => {
   try {
     const userId = req.params.id;
     const user = await UserModel.findById(userId).populate("userWorkouts");
@@ -89,11 +90,13 @@ export const login: RequestHandler = async (req, res) => {
     const { username, password } = req.body;
 
     if (!username || !password) {
-      res.status(400).json({ message: "Username and password are required" });
+      sendBadRequest(res, "Username and password are required");
+      // res.status(400).json({ message: "Username and password are required" });
       return;
     }
 
-    const user = await UserModel.findOne({ username });
+    const user = await UserModel.findOne({ username }).populate("userWorkouts");
+
     const errorResponse = { message: "Wrong username and/or password" };
     if (!user) {
       res.status(401).json(errorResponse);
@@ -105,9 +108,12 @@ export const login: RequestHandler = async (req, res) => {
       res.status(401).json(errorResponse);
       return;
     }
+    // Generate JWT
+    const token = generateToken(user.id);
 
     res.status(200).json({
       message: "Login successful",
+      token,
       user: user.toPublicJSON(),
     });
   } catch (error) {

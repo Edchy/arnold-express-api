@@ -12,7 +12,7 @@ interface IUser extends Document {
   toPublicJSON(): {
     // _id: Types.ObjectId;
     id: string;
-    // userWorkouts: Types.ObjectId[];
+    userWorkouts: Types.ObjectId[];
     username: string;
   };
 }
@@ -48,10 +48,10 @@ const userSchema = new Schema(
   }
 );
 
-// pre-save hook to generate a UUID for each new user on creation
-// runs on save() and create()
-// doesnt run on insertMany() unless rawResult option is set to false
-// updateOne() and findByIdAndUpdate() dont trigger this middleware
+// pre-save hook för att generera ett UUID för varje ny användare vid skapande
+// körs på save() och create()
+// körs inte på insertMany() om inte rawResult-alternativet är satt till false
+// updateOne() och findByIdAndUpdate() triggar inte denna middleware
 userSchema.pre("save", function (this: IUser, next) {
   if (this.isNew) {
     this.id = uuidv4();
@@ -66,7 +66,7 @@ userSchema.methods.toPublicJSON = function (this: IUser) {
     username: this.username,
     // _id: this._id,
     id: this.id,
-    // userWorkouts: this.userWorkouts,
+    userWorkouts: this.userWorkouts,
   };
 };
 
