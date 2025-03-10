@@ -12,7 +12,7 @@ interface IUser extends Document {
   toPublicJSON(): {
     // _id: Types.ObjectId;
     id: string;
-    userWorkouts: Types.ObjectId[];
+    // userWorkouts: Types.ObjectId[];
     username: string;
   };
 }
@@ -66,7 +66,7 @@ userSchema.methods.toPublicJSON = function (this: IUser) {
     username: this.username,
     // _id: this._id,
     id: this.id,
-    userWorkouts: this.userWorkouts,
+    // userWorkouts: this.userWorkouts,
   };
 };
 

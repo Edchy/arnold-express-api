@@ -1,7 +1,9 @@
 import { Router } from "express";
 import {
   createMongoUser,
-  getMongoUserById,
+  getMongoUserByUUID,
+  // getMongoUserWorkoutsByUUID,
+  getMongoUserWorkoutsByUsername,
   getMongoUsers,
   login,
 } from "../controllers/userController.mjs";
@@ -9,8 +11,10 @@ import { authLimiter } from "../middleware/rateLimiters.mjs";
 import { authenticateJWT } from "../middleware/jwt.mjs";
 
 const userRouter = Router();
-userRouter.get("/", authenticateJWT, getMongoUsers);
-userRouter.get("/:id", authenticateJWT, getMongoUserById);
+userRouter.get("/", getMongoUsers);
+userRouter.get("/:id", getMongoUserByUUID);
+// userRouter.get("/:id/workouts", getMongoUserWorkoutsByUUID);
+userRouter.get("/:username/workouts", getMongoUserWorkoutsByUsername);
 userRouter.post("/", createMongoUser);
 userRouter.post("/login", authLimiter, login);
 

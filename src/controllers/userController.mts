@@ -64,17 +64,18 @@ export const getMongoUsers: RequestHandler = async (req, res) => {
   }
 };
 // Get a user by ID
-export const getMongoUserById: RequestHandler = async (req, res) => {
+export const getMongoUserByUUID: RequestHandler = async (req, res) => {
   try {
     const userId = req.params.id;
-    const user = await UserModel.findById(userId).populate("userWorkouts");
+    // const user = await UserModel.findById(userId).populate("userWorkouts");
+    const user = await UserModel.findOne({ id: userId });
 
     if (!user) {
       res.status(404).json({ message: "User not found" });
       return;
     }
 
-    res.status(200).json(user);
+    res.status(200).json(user.toPublicJSON());
   } catch (error) {
     res.status(500).json({
       message: "Error finding user",
@@ -84,7 +85,50 @@ export const getMongoUserById: RequestHandler = async (req, res) => {
   }
 };
 
-// Add login functionality
+// get user workouts by querying the user's id (not _id)
+// export const getMongoUserWorkoutsByUUID: RequestHandler = async (req, res) => {
+//   try {
+//     const id = req.params.id;
+//     const user = await UserModel.findOne({ id }).populate("userWorkouts");
+
+//     if (!user) {
+//       res.status(404).json({ message: "User not found" });
+//       return;
+//     }
+
+//     res.status(200).json(user.userWorkouts);
+//     return;
+//   } catch (error) {
+//     res.status(500).json({
+//       message: "Error fetching workouts",
+//       error: (error as Error).message,
+//     });
+//   }
+// };
+// get userworkouts by querying the username (works because username is unique)
+export const getMongoUserWorkoutsByUsername: RequestHandler = async (
+  req,
+  res
+) => {
+  try {
+    const username = req.params.username;
+    const user = await UserModel.findOne({ username }).populate("userWorkouts");
+
+    if (!user) {
+      res.status(404).json({ message: "User not found" });
+      return;
+    }
+
+    res.status(200).json(user.userWorkouts);
+    return;
+  } catch (error) {
+    res.status(500).json({
+      message: "Error fetching workouts",
+      error: (error as Error).message,
+    });
+  }
+};
+// Login user
 export const login: RequestHandler = async (req, res) => {
   try {
     const { username, password } = req.body;
@@ -95,7 +139,7 @@ export const login: RequestHandler = async (req, res) => {
       return;
     }
 
-    const user = await UserModel.findOne({ username }).populate("userWorkouts");
+    const user = await UserModel.findOne({ username });
 
     const errorResponse = { message: "Wrong username and/or password" };
     if (!user) {
