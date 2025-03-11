@@ -87,11 +87,13 @@ export const createMongoWorkout: RequestHandler = async (req, res) => {
 };
 
 export const deleteMongoWorkout: RequestHandler = async (req, res) => {
-  console.log("Request user:", req.user); // Add this line
+  console.log("Request user:", req.user);
   const workoutId = req.params.id;
-  const userId = req.user.userId; // Assuming you have authentication middleware
-  console.log("User ID:", userId); // Add this line
-  console.log("Workout ID:", workoutId); // Add this line
+  const userId = req.user.userId; // From JWT
+  const workoutObjectId = new mongoose.Types.ObjectId(workoutId);
+
+  console.log("User ID:", userId);
+  console.log("Workout ID:", workoutId);
 
   try {
     // Find the workout
@@ -103,19 +105,21 @@ export const deleteMongoWorkout: RequestHandler = async (req, res) => {
     }
 
     // Find the user and remove the workout reference
-    // await UserModel.findByIdAndUpdate(userId, {
-    //   $pull: { userWorkouts: workoutId },
-    // });
+    await UserModel.findOneAndUpdate(
+      { id: userId },
+      {
+        $pull: { userWorkouts: workoutId },
+      }
+    );
 
     // Delete the workout document
-    // await WorkoutModel.findByIdAndDelete(workoutId);
+    await WorkoutModel.findByIdAndDelete(workoutId);
 
     res.status(200).json({
       success: true,
       message: "Workout deleted successfully",
     });
   } catch (error) {
-    console.error("lol");
     console.error("Error deleting workout:", error);
     res.status(500).json({
       success: false,

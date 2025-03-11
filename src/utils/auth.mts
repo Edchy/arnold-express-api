@@ -1,5 +1,6 @@
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
+import { TOKEN_EXPIRATION_TIME } from "./constants.mjs";
 
 dotenv.config();
 
@@ -10,7 +11,7 @@ if (!secretKey) {
   );
 }
 export const generateToken = (userId: string) => {
-  return jwt.sign({ userId }, secretKey, { expiresIn: "5s" });
+  return jwt.sign({ userId }, secretKey, { expiresIn: TOKEN_EXPIRATION_TIME });
 };
 
 export const verifyToken = (token: string) => {

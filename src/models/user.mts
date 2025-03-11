@@ -7,8 +7,6 @@ interface IUser extends Document {
   username: string;
   password: string;
   userWorkouts: Types.ObjectId[] | Workout[];
-  createdAt: Date;
-  updatedAt: Date;
 
   toPublicJSON(): {
     // _id: Types.ObjectId;

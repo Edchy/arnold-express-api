@@ -16,6 +16,9 @@ export const rateLimits = {
   window: 15 * 60 * 1000,
 };
 
+// jwt
+export const TOKEN_EXPIRATION_TIME = "1d";
+
 // db
 const dbuser = process.env.MONGOUSER;
 const dbpassword = process.env.MONGOPASSWORD;
