@@ -2,22 +2,15 @@ import { RequestHandler } from "express";
 import { v4 as uuidv4 } from "uuid";
 import { sendBadRequest, sendStatus } from "../utils/helpers.mjs";
 // import { getDb } from "../db/dbcon.mjs";
-import { WorkoutDto, WorkoutModel } from "../models/workout.mjs";
-import testworkouts from "../testdata.js";
+import {
+  transformToWorkoutDto,
+  WorkoutDto,
+  WorkoutModel,
+} from "../models/workout.mjs";
 import mongoose from "mongoose";
+import { UserModel } from "../models/user.mjs";
 
-//GET
-// export const getTestWorkouts: RequestHandler = (req, res) => {
-//   try {
-//     res.status(200).json(testworkouts);
-//   } catch (error) {
-//     res.status(500).json({
-//       message: "Error fetching workouts",
-//       error: (error as Error).message,
-//     });
-//   }
-// };
-export const getMongoWorkouts: RequestHandler = async (req, res) => {
+export const getMongoWorkouts: RequestHandler = async (_, res) => {
   try {
     console.log(
       mongoose.connection.db
@@ -26,19 +19,7 @@ export const getMongoWorkouts: RequestHandler = async (req, res) => {
     );
 
     const workouts = await WorkoutModel.find({});
-    const workoutsDTO = workouts.map(
-      (workout) =>
-        ({
-          name: workout.name,
-          exercises: workout.exercises.map((exercise) => ({
-            name: exercise.name,
-            reps: exercise.reps,
-            sets: exercise.sets,
-            weight: exercise.weight ?? undefined,
-          })),
-        } satisfies WorkoutDto)
-    );
-    res.status(200).json(workoutsDTO);
+    res.status(200).json(transformToWorkoutDto(workouts));
   } catch (error) {
     res.status(500).json({ error: (error as Error).message });
   }
@@ -75,7 +56,6 @@ export const createMongoWorkout: RequestHandler = async (req, res) => {
 
     // Create new workout document
     const newWorkout = new WorkoutModel({
-      id: uuidv4(),
       name,
       exercises,
     });
@@ -101,6 +81,45 @@ export const createMongoWorkout: RequestHandler = async (req, res) => {
     }
     res.status(500).json({
       message: "Error creating workout",
+      error: (error as Error).message,
+    });
+  }
+};
+
+export const deleteMongoWorkout: RequestHandler = async (req, res) => {
+  console.log("Request user:", req.user); // Add this line
+  const workoutId = req.params.id;
+  const userId = req.user.userId; // Assuming you have authentication middleware
+  console.log("User ID:", userId); // Add this line
+  console.log("Workout ID:", workoutId); // Add this line
+
+  try {
+    // Find the workout
+    const workout = await WorkoutModel.findById(workoutId);
+
+    if (!workout) {
+      res.status(404).json({ message: "Workout not found" });
+      return;
+    }
+
+    // Find the user and remove the workout reference
+    // await UserModel.findByIdAndUpdate(userId, {
+    //   $pull: { userWorkouts: workoutId },
+    // });
+
+    // Delete the workout document
+    // await WorkoutModel.findByIdAndDelete(workoutId);
+
+    res.status(200).json({
+      success: true,
+      message: "Workout deleted successfully",
+    });
+  } catch (error) {
+    console.error("lol");
+    console.error("Error deleting workout:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to delete workout",
       error: (error as Error).message,
     });
   }

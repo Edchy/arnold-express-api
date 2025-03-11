@@ -1,7 +1,8 @@
-import mongoose from "mongoose";
+import { Document, Schema, model } from "mongoose";
 
 // Data Transfer Object (DTO)
 export type WorkoutDto = {
+  _id: string;
   name: string;
   exercises: {
     name: string;
@@ -11,7 +12,34 @@ export type WorkoutDto = {
   }[];
 };
 
-const exerciseSchema = new mongoose.Schema(
+// Mongoose Document Types
+export interface Exercise extends Document {
+  name: string;
+  reps: number;
+  sets: number;
+  weight?: number;
+}
+
+export interface Workout extends Document {
+  _id: string;
+  name: string;
+  exercises: Exercise[];
+}
+
+export const transformToWorkoutDto = (workouts: Workout[]): WorkoutDto[] => {
+  return workouts.map((workout) => ({
+    _id: workout._id.toString(),
+    name: workout.name,
+    exercises: workout.exercises.map((exercise: Exercise) => ({
+      name: exercise.name,
+      reps: exercise.reps,
+      sets: exercise.sets,
+      weight: exercise.weight ?? undefined,
+    })),
+  }));
+};
+
+const exerciseSchema = new Schema<Exercise>(
   {
     name: {
       type: String,
@@ -34,12 +62,8 @@ const exerciseSchema = new mongoose.Schema(
   { _id: false, strict: true }
 );
 
-const workoutSchema = new mongoose.Schema(
+const workoutSchema = new Schema<Workout>(
   {
-    id: {
-      type: String,
-      required: false,
-    },
     name: {
       type: String,
       required: true,
@@ -52,4 +76,4 @@ const workoutSchema = new mongoose.Schema(
   }
 );
 
-export const WorkoutModel = mongoose.model("workout", workoutSchema);
+export const WorkoutModel = model<Workout>("workout", workoutSchema);

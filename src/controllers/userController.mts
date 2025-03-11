@@ -6,19 +6,36 @@ import mongoose from "mongoose";
 import { sendBadRequest } from "../utils/helpers.mjs";
 import bcrypt from "bcrypt";
 import { generateToken } from "../utils/auth.mjs";
+import { transformToWorkoutDto, WorkoutDto } from "../models/workout.mjs";
+import { Workout } from "../models/workout.mjs";
 
 // Create a new user
+const USERNAME_MIN_LENGTH = 2;
+const USERNAME_MAX_LENGTH = 15;
+const PASSWORD_MIN_LENGTH = 6;
+const PASSWORD_MAX_LENGTH = 50;
+
 export const createMongoUser: RequestHandler = async (req, res) => {
   try {
     const { username, password } = req.body;
 
-    if (!username) {
-      sendBadRequest(res, "Username is required");
+    if (
+      !username ||
+      username.length < USERNAME_MIN_LENGTH ||
+      username.length > USERNAME_MAX_LENGTH
+    ) {
+      sendBadRequest(
+        res,
+        `Username must be between ${USERNAME_MIN_LENGTH} and ${USERNAME_MAX_LENGTH} characters long`
+      );
       return;
     }
 
-    if (password.length < 6) {
-      sendBadRequest(res, "Password must be at least 6 characters long");
+    if (!password || password.length < PASSWORD_MIN_LENGTH) {
+      sendBadRequest(
+        res,
+        `Password must be atleast ${PASSWORD_MIN_LENGTH} characters long`
+      );
       return;
     }
 
@@ -38,7 +55,7 @@ export const createMongoUser: RequestHandler = async (req, res) => {
 
     // Create a new user and save it to the database
     const newUser = await UserModel.create({
-      username,
+      username: username.toLowerCase(),
       password: hashedPassword,
       userWorkouts: defaultWorkoutIds,
     });
@@ -75,7 +92,7 @@ export const getMongoUserByUUID: RequestHandler = async (req, res) => {
       return;
     }
 
-    res.status(200).json(user.toPublicJSON());
+    res.status(200).json(user);
   } catch (error) {
     res.status(500).json({
       message: "Error finding user",
@@ -105,6 +122,7 @@ export const getMongoUserByUUID: RequestHandler = async (req, res) => {
 //     });
 //   }
 // };
+
 // get userworkouts by querying the username (works because username is unique)
 export const getMongoUserWorkoutsByUsername: RequestHandler = async (
   req,
@@ -113,13 +131,13 @@ export const getMongoUserWorkoutsByUsername: RequestHandler = async (
   try {
     const username = req.params.username;
     const user = await UserModel.findOne({ username }).populate("userWorkouts");
-
     if (!user) {
       res.status(404).json({ message: "User not found" });
       return;
     }
 
-    res.status(200).json(user.userWorkouts);
+    const workoutsDto = transformToWorkoutDto(user.userWorkouts as Workout[]);
+    res.status(200).json(workoutsDto);
     return;
   } catch (error) {
     res.status(500).json({

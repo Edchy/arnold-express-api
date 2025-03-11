@@ -10,13 +10,15 @@ if (!secretKey) {
   );
 }
 export const generateToken = (userId: string) => {
-  return jwt.sign({ userId }, secretKey, { expiresIn: "1h" });
+  return jwt.sign({ userId }, secretKey, { expiresIn: "5s" });
 };
 
 export const verifyToken = (token: string) => {
   try {
     return jwt.verify(token, secretKey);
   } catch (error) {
+    console.error("Token verification failed:", (error as Error).message);
+
     return null;
   }
 };

@@ -9,8 +9,9 @@ declare module "express-serve-static-core" {
 
 export const authenticateJWT: RequestHandler = (req, res, next) => {
   const authHeader = req.headers.authorization;
-  console.log(req.headers.authorization);
-  console.log(authHeader);
+  // console.log(req.headers.authorization);
+  // console.log(authHeader);
+  console.log("hello from jwt middleware");
   if (authHeader) {
     const token = authHeader.split(" ")[1];
 
@@ -19,9 +20,9 @@ export const authenticateJWT: RequestHandler = (req, res, next) => {
       req.user = decoded;
       next();
     } else {
-      res.status(403).json({ message: "Forbidden" });
+      res.status(403).json({ message: "Forbidden: Invalid or expired token" });
     }
   } else {
-    res.status(401).json({ message: "Unauthorized" });
+    res.status(401).json({ message: "Unauthorized: No token provided" });
   }
 };

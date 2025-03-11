@@ -1,11 +1,12 @@
 import { Document, Schema, Types, model } from "mongoose";
 import { v4 as uuidv4 } from "uuid";
+import { Workout } from "./workout.mjs";
 
 interface IUser extends Document {
   id: string;
   username: string;
   password: string;
-  userWorkouts: Types.ObjectId[];
+  userWorkouts: Types.ObjectId[] | Workout[];
   createdAt: Date;
   updatedAt: Date;
 
@@ -16,10 +17,6 @@ interface IUser extends Document {
     username: string;
   };
 }
-
-export type Dto = {
-  username: string;
-};
 
 const userSchema = new Schema(
   {

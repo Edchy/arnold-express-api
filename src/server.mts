@@ -13,7 +13,7 @@ import morgan from "morgan";
 export const app = express();
 
 //Middlewares
-app.use(morgan("tiny"));
+// app.use(morgan("tiny"));
 app.use(limiter);
 app.use(cors());
 // app.use(logger);
