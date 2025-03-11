@@ -95,32 +95,75 @@ export const deleteMongoWorkout: RequestHandler = async (req, res) => {
   console.log("User ID:", userId);
   console.log("Workout ID:", workoutId);
 
+  // Start a session for the transaction
+  const session = await mongoose.startSession();
+  session.startTransaction();
+
   try {
-    // Find the workout
-    const workout = await WorkoutModel.findById(workoutId);
+    // Find the workout using ObjectId
+    const workout = await WorkoutModel.findById(workoutId).session(session);
 
     if (!workout) {
+      await session.abortTransaction();
+      session.endSession();
       res.status(404).json({ message: "Workout not found" });
       return;
     }
 
-    // Find the user and remove the workout reference
-    await UserModel.findOneAndUpdate(
+    // Find the user by their custom ID and remove the workout reference
+    // Using workoutObjectId instead of workoutId string
+    const userUpdateResult = await UserModel.findOneAndUpdate(
       { id: userId },
       {
-        $pull: { userWorkouts: workoutId },
-      }
+        $pull: { userWorkouts: workoutObjectId },
+      },
+      { session, new: true }
     );
 
-    // Delete the workout document
-    await WorkoutModel.findByIdAndDelete(workoutId);
+    if (!userUpdateResult) {
+      await session.abortTransaction();
+      session.endSession();
+      res.status(404).json({ message: "User not found" });
+      return;
+    }
+
+    // Delete the workout document using the ObjectId
+    const deleteResult = await WorkoutModel.findByIdAndDelete(
+      workoutObjectId
+    ).session(session);
+
+    if (!deleteResult) {
+      await session.abortTransaction();
+      session.endSession();
+      res.status(500).json({ message: "Failed to delete workout" });
+
+      return;
+    }
+
+    // Commit the transaction if all operations succeed
+    await session.commitTransaction();
+    session.endSession();
 
     res.status(200).json({
       success: true,
       message: "Workout deleted successfully",
     });
   } catch (error) {
+    // Abort the transaction if any operation fails
+    await session.abortTransaction();
+    session.endSession();
+
     console.error("Error deleting workout:", error);
+
+    // Handle specific error types
+    if (error instanceof mongoose.Error.CastError) {
+      res.status(400).json({
+        success: false,
+        message: "Invalid workout ID format",
+        error: error.message,
+      });
+    }
+
     res.status(500).json({
       success: false,
       message: "Failed to delete workout",
