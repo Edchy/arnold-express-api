@@ -5,9 +5,8 @@ export const PORT = process.env.PORT || 3000;
 
 // default workout ids
 export const DEFAULT_WORKOUT_IDS = [
-  "67c6fdb71d048a3544ddeb25",
-  "67d00e614fdfc23bd3b034bd",
-  "67d01047d8ed9bc782d0bed5",
+  "67d02c2ea53d4bff776e092d",
+  "67d02c55a53d4bff776e092f",
 ];
 // rate limits
 export const rateLimits = {

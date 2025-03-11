@@ -5,6 +5,30 @@ interface Exercise {
   weight: number;
 }
 
+// {
+//   "name": "Workout A",
+//   "exercises": [
+//     {
+//       "name": "Squats",
+//       "reps": 5,
+//       "sets": 5,
+//       "weight": 225
+//     },
+//     {
+//       "name": "Bench Press",
+//       "reps": 5,
+//       "sets": 5,
+//       "weight": 185
+//     },
+//     {
+//       "name": "Shoulder Press",
+//       "reps": 12,
+//       "sets": 3,
+//       "weight": 95
+//     }
+//   ]
+// }
+
 interface Workout {
   name: string;
   exercises: Exercise[];

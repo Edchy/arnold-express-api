@@ -85,7 +85,12 @@ export const createMongoWorkout: RequestHandler = async (req, res) => {
     });
   }
 };
-
+// export const deleteMongoWorkout: RequestHandler = async (req, res) => {
+//   console.log("Request user:", req.user);
+//   const workoutId = req.params.id;
+//   const workout = await WorkoutModel.findById(workoutId);
+//   console.log(workout?.isDefault);
+// };
 export const deleteMongoWorkout: RequestHandler = async (req, res) => {
   console.log("Request user:", req.user);
   const workoutId = req.params.id;
@@ -110,6 +115,10 @@ export const deleteMongoWorkout: RequestHandler = async (req, res) => {
       return;
     }
 
+    // Check if this is a default workout
+    const isDefaultWorkout = workout.isDefault === true;
+    console.log(`Is default workout: ${isDefaultWorkout}`);
+
     // Find the user by their custom ID and remove the workout reference
     // Using workoutObjectId instead of workoutId string
     const userUpdateResult = await UserModel.findOneAndUpdate(
@@ -127,17 +136,18 @@ export const deleteMongoWorkout: RequestHandler = async (req, res) => {
       return;
     }
 
-    // Delete the workout document using the ObjectId
-    const deleteResult = await WorkoutModel.findByIdAndDelete(
-      workoutObjectId
-    ).session(session);
+    // Only delete the workout document if it's not a default workout
+    if (!isDefaultWorkout) {
+      const deleteResult = await WorkoutModel.findByIdAndDelete(
+        workoutObjectId
+      ).session(session);
 
-    if (!deleteResult) {
-      await session.abortTransaction();
-      session.endSession();
-      res.status(500).json({ message: "Failed to delete workout" });
-
-      return;
+      if (!deleteResult) {
+        await session.abortTransaction();
+        session.endSession();
+        res.status(500).json({ message: "Failed to delete workout" });
+        return;
+      }
     }
 
     // Commit the transaction if all operations succeed

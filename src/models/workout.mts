@@ -24,6 +24,7 @@ export interface Workout extends Document {
   _id: string;
   name: string;
   exercises: Exercise[];
+  isDefault: boolean;
 }
 
 export const transformToWorkoutDto = (workouts: Workout[]): WorkoutDto[] => {
@@ -70,6 +71,10 @@ const workoutSchema = new Schema<Workout>(
       trim: true,
     },
     exercises: [exerciseSchema],
+    isDefault: {
+      type: Boolean,
+      default: false,
+    },
   },
   {
     timestamps: true,
