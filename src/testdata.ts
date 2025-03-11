@@ -2,7 +2,32 @@ interface Exercise {
   name: string;
   reps: number;
   sets: number;
+  weight: number;
 }
+
+// {
+//   "name": "Workout A",
+//   "exercises": [
+//     {
+//       "name": "Squats",
+//       "reps": 5,
+//       "sets": 5,
+//       "weight": 225
+//     },
+//     {
+//       "name": "Bench Press",
+//       "reps": 5,
+//       "sets": 5,
+//       "weight": 185
+//     },
+//     {
+//       "name": "Shoulder Press",
+//       "reps": 12,
+//       "sets": 3,
+//       "weight": 95
+//     }
+//   ]
+// }
 
 interface Workout {
   name: string;
@@ -11,19 +36,19 @@ interface Workout {
 
 const workouts: Workout[] = [
   {
-    name: "5x5 Stronglifts",
+    name: "Workout A",
     exercises: [
-      { name: "Bench Press", reps: 10, sets: 3 },
-      { name: "Pull-Ups", reps: 8, sets: 3 },
-      { name: "Shoulder Press", reps: 12, sets: 3 },
+      { name: "Squats", reps: 5, sets: 5, weight: 225 },
+      { name: "Bench Press", reps: 5, sets: 5, weight: 185 },
+      { name: "Shoulder Press", reps: 12, sets: 3, weight: 95 },
     ],
   },
   {
-    name: "Lower Body Power",
+    name: "Workout B",
     exercises: [
-      { name: "Squats", reps: 12, sets: 3 },
-      { name: "Deadlifts", reps: 8, sets: 3 },
-      { name: "Lunges", reps: 10, sets: 3 },
+      { name: "Squats", reps: 12, sets: 3, weight: 135 },
+      { name: "Deadlifts", reps: 8, sets: 3, weight: 225 },
+      { name: "Lunges", reps: 10, sets: 3, weight: 95 },
     ],
   },
 ];

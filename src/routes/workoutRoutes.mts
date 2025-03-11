@@ -1,13 +1,17 @@
 import express from "express";
 import {
   getMongoWorkouts,
-  getTestWorkouts,
+  createMongoWorkout,
+  getMongoWorkoutById,
+  deleteMongoWorkout,
 } from "../controllers/workoutController.mjs";
+import { authenticateJWT } from "../middleware/jwt.mjs";
 
-const router = express.Router();
+const workoutRouter = express.Router();
 
-router.get("/", getMongoWorkouts);
-// router.get("/", getTestWorkouts);
-// router.post("/", createWorkout);
+workoutRouter.get("/", getMongoWorkouts);
+workoutRouter.get("/:id", getMongoWorkoutById);
+workoutRouter.post("/", createMongoWorkout);
+workoutRouter.delete("/:id", authenticateJWT, deleteMongoWorkout);
 
-export default router;
+export default workoutRouter;
