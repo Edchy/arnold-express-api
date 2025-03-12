@@ -1,12 +1,6 @@
 import { RequestHandler } from "express";
-import { v4 as uuidv4 } from "uuid";
-import { sendBadRequest, sendStatus } from "../utils/helpers.mjs";
-// import { getDb } from "../db/dbcon.mjs";
-import {
-  transformToWorkoutDto,
-  WorkoutDto,
-  WorkoutModel,
-} from "../models/workout.mjs";
+import { sendBadRequest } from "../utils/helpers.mjs";
+import { transformToWorkoutDto, WorkoutModel } from "../models/workout.mjs";
 import mongoose from "mongoose";
 import { UserModel } from "../models/user.mjs";
 
@@ -85,22 +79,19 @@ export const createMongoWorkout: RequestHandler = async (req, res) => {
     });
   }
 };
-// export const deleteMongoWorkout: RequestHandler = async (req, res) => {
-//   console.log("Request user:", req.user);
-//   const workoutId = req.params.id;
-//   const workout = await WorkoutModel.findById(workoutId);
-//   console.log(workout?.isDefault);
-// };
+
+// delete workout. If it's a default workout, only remove the reference from the user
 export const deleteMongoWorkout: RequestHandler = async (req, res) => {
   console.log("Request user:", req.user);
   const workoutId = req.params.id;
   const userId = req.user.userId; // From JWT
-  const workoutObjectId = new mongoose.Types.ObjectId(workoutId);
+  const workoutObjectId = new mongoose.Types.ObjectId(workoutId); // might not be needed
 
   console.log("User ID:", userId);
   console.log("Workout ID:", workoutId);
 
-  // Start a session for the transaction
+  // Start a session for the transaction to ensure data consistency
+  // KOMMENTAR: vi har en session som vi kan använda för att göra flera operationer i databasen och sedan commita eller aborta baserat på om allt gick bra eller inte. Det jag vill är att om en operation failar så ska vi inte göra något alls. Om allt går bra så ska vi commita och spara ändringarna.
   const session = await mongoose.startSession();
   session.startTransaction();
 
@@ -120,7 +111,7 @@ export const deleteMongoWorkout: RequestHandler = async (req, res) => {
     console.log(`Is default workout: ${isDefaultWorkout}`);
 
     // Find the user by their custom ID and remove the workout reference
-    // Using workoutObjectId instead of workoutId string
+    // Using workoutObjectId instead of workoutId string (not sure if needed)
     const userUpdateResult = await UserModel.findOneAndUpdate(
       { id: userId },
       {

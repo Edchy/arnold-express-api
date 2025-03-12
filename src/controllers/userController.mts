@@ -1,20 +1,19 @@
 import { RequestHandler } from "express";
 import { UserModel } from "../models/user.mjs";
 import { DEFAULT_WORKOUT_IDS } from "../utils/constants.mjs";
-import { v4 as uuidv4 } from "uuid";
 import mongoose from "mongoose";
 import { sendBadRequest } from "../utils/helpers.mjs";
 import bcrypt from "bcrypt";
 import { generateToken } from "../utils/auth.mjs";
-import { transformToWorkoutDto, WorkoutDto } from "../models/workout.mjs";
+import { transformToWorkoutDto } from "../models/workout.mjs";
 import { Workout } from "../models/workout.mjs";
+import {
+  USERNAME_MAX_LENGTH,
+  USERNAME_MIN_LENGTH,
+  PASSWORD_MIN_LENGTH,
+} from "../utils/constants.mjs";
 
 // Create a new user
-const USERNAME_MIN_LENGTH = 2;
-const USERNAME_MAX_LENGTH = 15;
-const PASSWORD_MIN_LENGTH = 6;
-const PASSWORD_MAX_LENGTH = 50;
-
 export const createMongoUser: RequestHandler = async (req, res) => {
   try {
     const { username, password } = req.body;
@@ -40,7 +39,9 @@ export const createMongoUser: RequestHandler = async (req, res) => {
     }
 
     if (await UserModel.findOne({ username })) {
-      sendBadRequest(res, "Username already taken");
+      sendBadRequest(res, {
+        message: "That username is so good, it's already taken!",
+      });
       return;
     }
     // Hash the password
@@ -69,13 +70,14 @@ export const createMongoUser: RequestHandler = async (req, res) => {
     });
   }
 };
+
 // get all
 export const getMongoUsers: RequestHandler = async (req, res) => {
   try {
-    const users = await UserModel.find({}).populate("userWorkouts");
+    const users = await UserModel.find({});
+    // Send only the public fields of the users
     const publicUsers = users.map((user) => user.toPublicJSON());
     res.status(200).json(publicUsers);
-    // res.status(200).json(users);
   } catch (error) {
     res.status(500).json({ error: (error as Error).message });
   }
@@ -84,8 +86,7 @@ export const getMongoUsers: RequestHandler = async (req, res) => {
 export const getMongoUserByUUID: RequestHandler = async (req, res) => {
   try {
     const userId = req.params.id;
-    // const user = await UserModel.findById(userId).populate("userWorkouts");
-    const user = await UserModel.findOne({ id: userId });
+    const user = await UserModel.findOne({ id: userId }); // pass the id as a query (not _id)
 
     if (!user) {
       res.status(404).json({ message: "User not found" });
@@ -101,27 +102,6 @@ export const getMongoUserByUUID: RequestHandler = async (req, res) => {
     });
   }
 };
-
-// get user workouts by querying the user's id (not _id)
-// export const getMongoUserWorkoutsByUUID: RequestHandler = async (req, res) => {
-//   try {
-//     const id = req.params.id;
-//     const user = await UserModel.findOne({ id }).populate("userWorkouts");
-
-//     if (!user) {
-//       res.status(404).json({ message: "User not found" });
-//       return;
-//     }
-
-//     res.status(200).json(user.userWorkouts);
-//     return;
-//   } catch (error) {
-//     res.status(500).json({
-//       message: "Error fetching workouts",
-//       error: (error as Error).message,
-//     });
-//   }
-// };
 
 // get userworkouts by querying the username (works because username is unique)
 export const getMongoUserWorkoutsByUsername: RequestHandler = async (
@@ -153,7 +133,6 @@ export const login: RequestHandler = async (req, res) => {
 
     if (!username || !password) {
       sendBadRequest(res, "Username and password are required");
-      // res.status(400).json({ message: "Username and password are required" });
       return;
     }
 
@@ -164,7 +143,7 @@ export const login: RequestHandler = async (req, res) => {
       res.status(401).json(errorResponse);
       return;
     }
-
+    // Compare the password the user is posting with the hashed password in the database
     const passwordMatch = await bcrypt.compare(password, user.password);
     if (!passwordMatch) {
       res.status(401).json(errorResponse);
@@ -185,3 +164,34 @@ export const login: RequestHandler = async (req, res) => {
     });
   }
 };
+
+// Delete a user by ID
+export const deleteMongoUser: RequestHandler = async (req, res) => {
+  try {
+    console.log("User from token:", req.user);
+    const userId = req.user.userId;
+
+    // Find user by custom UUID field first
+    const user = await UserModel.findOne({ id: userId });
+
+    if (!user) {
+      res.status(404).json({ message: "User not found" });
+      return;
+    }
+
+    console.log("Found user:", user._id);
+
+    // Delete user by MongoDB _id
+    await UserModel.findByIdAndDelete(user._id);
+
+    res.status(200).json({ message: "Account deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting account:", error);
+    res.status(500).json({
+      message: "Failed to delete account",
+      error: error instanceof Error ? error.message : "Unknown error",
+    });
+  }
+};
+
+// eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIwYTNkYzA2Ni1lZWQwLTRmNmYtYjdhOS1jZjlkMzBhNzJkMTMiLCJpYXQiOjE3NDE3NzI4MzksImV4cCI6MTc0MTg1OTIzOX0.727N3TwGFGJfG-Eza8vThaujVxlUPl9CfM2FSIVzvW4

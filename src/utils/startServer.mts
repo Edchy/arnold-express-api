@@ -1,9 +1,9 @@
 import { app } from "../server.mjs";
 
-type Port = string | number;
-const fallbackPort = "3000";
+type Port = number | string;
+
 export default function startServer(port: Port): void {
-  app.listen(port || fallbackPort, () => {
+  app.listen(port, () => {
     console.log(`Express server running at http://localhost:${port}`);
   });
 }

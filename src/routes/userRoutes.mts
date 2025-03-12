@@ -5,6 +5,7 @@ import {
   getMongoUserWorkoutsByUsername,
   getMongoUsers,
   login,
+  deleteMongoUser,
 } from "../controllers/userController.mjs";
 import { authLimiter } from "../middleware/rateLimiters.mjs";
 import { authenticateJWT } from "../middleware/jwt.mjs";
@@ -15,5 +16,6 @@ userRouter.get("/:id", getMongoUserByUUID);
 userRouter.get("/:username/workouts", getMongoUserWorkoutsByUsername);
 userRouter.post("/", createMongoUser);
 userRouter.post("/login", authLimiter, login);
+userRouter.delete("/", authenticateJWT, deleteMongoUser);
 
 export default userRouter;
