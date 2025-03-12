@@ -73,8 +73,28 @@ export const createMongoUser: RequestHandler = async (req, res) => {
 
 // get all
 export const getMongoUsers: RequestHandler = async (req, res) => {
+  console.log(req.query);
   try {
     const users = await UserModel.find({});
+    if (!users) {
+      res.status(404).json({ message: "No users found" });
+      return;
+    }
+    if (req.query.sort) {
+      let sortedUsers;
+      if (req.query.sort === "asc") {
+        sortedUsers = users
+          .sort((a, b) => b.username.localeCompare(a.username))
+          .map((user) => user.username);
+      } else {
+        sortedUsers = users
+          .sort((a, b) => a.username.localeCompare(b.username))
+          .map((user) => user.username);
+      }
+      res.status(200).json(sortedUsers);
+      return;
+    }
+
     // Send only the public fields of the users
     const publicUsers = users.map((user) => user.toPublicJSON());
     res.status(200).json(publicUsers);
