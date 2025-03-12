@@ -39,8 +39,15 @@ export const getMongoWorkoutById: RequestHandler = async (req, res) => {
 };
 // POST
 export const createMongoWorkout: RequestHandler = async (req, res) => {
+  console.log("Request user:", req.user);
+
+  // Start a session for transaction
+  const session = await mongoose.startSession();
+  session.startTransaction();
+
   try {
     const { name, exercises } = req.body;
+    const { userId } = req.user;
 
     // Validate required fields
     if (!name || !Array.isArray(exercises)) {
@@ -48,27 +55,50 @@ export const createMongoWorkout: RequestHandler = async (req, res) => {
       return;
     }
 
-    // Create new workout document
-    const newWorkout = new WorkoutModel({
-      name,
-      exercises,
-    });
+    const user = await UserModel.findOne({ id: userId }).session(session);
 
-    // Save to database
-    const savedWorkout = await newWorkout.save();
-    res.status(201).json(savedWorkout);
+    if (!user) {
+      await session.abortTransaction();
+      session.endSession();
+      res.status(404).json({ message: "User not found" });
+      return;
+    }
 
-    // Create and save in one step
-    // const savedWorkout = await WorkoutModel.create({
-    //   name,
-    //   exercises,
-    // });
+    const newWorkout = await WorkoutModel.create(
+      [
+        {
+          name,
+          exercises,
+          createdBy: user.username,
+        },
+      ],
+      { session }
+    );
+    console.log("New workout:", newWorkout);
+
+    // MongoDB creates an array when using create with session
+    // Update the user's userWorkouts array with the new workout's ID
+
+    await UserModel.updateOne(
+      { id: userId },
+      { $push: { userWorkouts: newWorkout[0]._id } },
+      { session }
+    );
+
+    // Commit the transaction
+    await session.commitTransaction();
+    session.endSession();
+    res.status(201).json(newWorkout);
 
     if (mongoose.connection.db) {
       console.log(`Saving to database: ${mongoose.connection.db.databaseName}`);
       console.log(`Saving to collection: ${WorkoutModel.collection.name}`);
     }
   } catch (error) {
+    // Abort the transaction if any operation fails
+    await session.abortTransaction();
+    session.endSession();
+
     if (error instanceof mongoose.Error.ValidationError) {
       sendBadRequest(res, { message: error.message });
       return;

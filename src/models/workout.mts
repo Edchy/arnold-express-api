@@ -25,6 +25,7 @@ export interface Workout extends Document {
   name: string;
   exercises: Exercise[];
   isDefault: boolean;
+  createdBy: string;
 }
 
 export const transformToWorkoutDto = (workouts: Workout[]): WorkoutDto[] => {
@@ -74,6 +75,10 @@ const workoutSchema = new Schema<Workout>(
     isDefault: {
       type: Boolean,
       default: false,
+    },
+    createdBy: {
+      type: String,
+      // required: true,
     },
   },
   {

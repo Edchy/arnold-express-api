@@ -11,7 +11,7 @@ const workoutRouter = express.Router();
 
 workoutRouter.get("/", getMongoWorkouts);
 workoutRouter.get("/:id", getMongoWorkoutById);
-workoutRouter.post("/", createMongoWorkout);
+workoutRouter.post("/", authenticateJWT, createMongoWorkout);
 workoutRouter.delete("/:id", authenticateJWT, deleteMongoWorkout);
 
 export default workoutRouter;
