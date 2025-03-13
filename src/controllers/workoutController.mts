@@ -6,6 +6,7 @@ import { UserModel } from "../models/user.mjs";
 
 export const getMongoWorkouts: RequestHandler = async (req, res) => {
   const { s } = req.query;
+  const { u } = req.query;
 
   console.log("Query string:", s, typeof s);
   try {
@@ -17,9 +18,24 @@ export const getMongoWorkouts: RequestHandler = async (req, res) => {
 
     const workouts = await WorkoutModel.find({});
     console.log(Boolean(req.query.s), req.query.s);
+
+    // query for usercreated workouts
+    if (req.query.u) {
+      const userName = req.query.u as string;
+      const userWorkouts = await WorkoutModel.find({ createdBy: userName });
+      res.status(200).json(
+        userWorkouts.map((workout) => ({
+          id: workout._id,
+          name: workout.name,
+          exercises: workout.exercises,
+        }))
+      );
+      return;
+    }
+
+    // query for exercises return all workouts that contain a specific exercise
     if (req.query.s) {
       const search = req.query.s as string;
-      // Search for all workouts that contain a specific exercise (case insensitive)
       const filteredWorkouts = workouts.filter((workout) =>
         workout.exercises.some((exercise) => {
           const exerciseName = exercise.name.toLowerCase().replace(/\s+/g, "");
@@ -30,14 +46,6 @@ export const getMongoWorkouts: RequestHandler = async (req, res) => {
       res.status(200).json(transformToWorkoutDto(filteredWorkouts));
       return;
     }
-    // Search for all workouts that contain a specific exercise (case insensitive)
-    const filteredWorkouts = workouts.filter((workout) =>
-      workout.exercises.some((exercise) =>
-        exercise.name.toLowerCase().includes((s as string).toLowerCase())
-      )
-    );
-    console.log(filteredWorkouts);
-
     res.status(200).json(transformToWorkoutDto(workouts));
   } catch (error) {
     res.status(500).json({ error: (error as Error).message });
