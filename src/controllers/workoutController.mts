@@ -4,7 +4,10 @@ import { transformToWorkoutDto, WorkoutModel } from "../models/workout.mjs";
 import mongoose from "mongoose";
 import { UserModel } from "../models/user.mjs";
 
-export const getMongoWorkouts: RequestHandler = async (_, res) => {
+export const getMongoWorkouts: RequestHandler = async (req, res) => {
+  const { s } = req.query;
+
+  console.log("Query string:", s, typeof s);
   try {
     console.log(
       mongoose.connection.db
@@ -13,6 +16,28 @@ export const getMongoWorkouts: RequestHandler = async (_, res) => {
     );
 
     const workouts = await WorkoutModel.find({});
+    console.log(Boolean(req.query.s), req.query.s);
+    if (req.query.s) {
+      const search = req.query.s as string;
+      // Search for all workouts that contain a specific exercise (case insensitive)
+      const filteredWorkouts = workouts.filter((workout) =>
+        workout.exercises.some((exercise) => {
+          const exerciseName = exercise.name.toLowerCase().replace(/\s+/g, "");
+          const searchName = search.toLowerCase().replace(/\s+/g, "");
+          return exerciseName.includes(searchName);
+        })
+      );
+      res.status(200).json(transformToWorkoutDto(filteredWorkouts));
+      return;
+    }
+    // Search for all workouts that contain a specific exercise (case insensitive)
+    const filteredWorkouts = workouts.filter((workout) =>
+      workout.exercises.some((exercise) =>
+        exercise.name.toLowerCase().includes((s as string).toLowerCase())
+      )
+    );
+    console.log(filteredWorkouts);
+
     res.status(200).json(transformToWorkoutDto(workouts));
   } catch (error) {
     res.status(500).json({ error: (error as Error).message });

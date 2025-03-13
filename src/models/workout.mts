@@ -32,6 +32,7 @@ export const transformToWorkoutDto = (workouts: Workout[]): WorkoutDto[] => {
   return workouts.map((workout) => ({
     _id: workout._id.toString(),
     name: workout.name,
+    megaChadThatCreatedThisMasterpiece: workout.createdBy,
     exercises: workout.exercises.map((exercise: Exercise) => ({
       name: exercise.name,
       reps: exercise.reps,
