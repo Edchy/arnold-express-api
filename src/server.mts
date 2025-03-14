@@ -39,6 +39,16 @@ app.use(
 );
 app.use("/workouts", workoutRoutes);
 app.use("/users", userRoutes);
+app.get("/", (_, res) => {
+  res.send(`
+    <ul>
+      <li><a href="/api-docs">API Documentation</a></li>
+      <li><a href="https://arnold-n9wx.onrender.com/">Live Backend</a></li>
+      <li><a href="https://rnld-astro-react.onrender.com/">Live Frontend</a></li>
+    </ul>
+    <p>Hostade på Render's Free Tier så dom "somnar" efter inaktivitet, men bör spinna upp efter nån minut man vill testa</p>
+  `);
+});
 
 connectToMongoDB()
   .then(() => {
