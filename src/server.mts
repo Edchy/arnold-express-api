@@ -16,10 +16,24 @@ export const app = express();
 // app.use(morgan("tiny"));
 app.use(limiter);
 app.use(cors());
+// {
+//   origin: 'http://localhost:4321',
+//   methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+//   credentials: true,
+//   optionsSuccessStatus: 204
+// }
 // app.use(logger);
 app.use(json());
-// app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(specs));
-
+app.use(
+  "/api-docs",
+  swaggerUi.serve,
+  swaggerUi.setup(specs, {
+    explorer: true,
+    swaggerOptions: {
+      persistAuthorization: true,
+    },
+  })
+);
 app.use("/workouts", workoutRoutes);
 app.use("/users", userRoutes);
 
