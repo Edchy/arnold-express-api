@@ -18,7 +18,7 @@ export const rateLimits = {
 // cors
 export const frontendUrl =
   process.env.NODE_ENV === "production"
-    ? "http://localhost:4321" // Replace with production URL
+    ? "https://rnld-astro-react.onrender.com/" // Replace with production URL
     : "http://localhost:4321";
 
 // validation
