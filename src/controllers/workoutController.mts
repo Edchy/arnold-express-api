@@ -5,10 +5,9 @@ import mongoose from "mongoose";
 import { UserModel } from "../models/user.mjs";
 
 export const getMongoWorkouts: RequestHandler = async (req, res) => {
-  const { s } = req.query;
-  const { u } = req.query;
+  const search = req.query.s as string;
+  const userName = req.query.u as string;
 
-  console.log("Query string:", s, typeof s);
   try {
     console.log(
       mongoose.connection.db
@@ -20,8 +19,7 @@ export const getMongoWorkouts: RequestHandler = async (req, res) => {
     console.log(Boolean(req.query.s), req.query.s);
 
     // query for usercreated workouts
-    if (req.query.u) {
-      const userName = req.query.u as string;
+    if (userName) {
       const userWorkouts = await WorkoutModel.find({ createdBy: userName });
       res.status(200).json(
         userWorkouts.map((workout) => ({
@@ -34,8 +32,7 @@ export const getMongoWorkouts: RequestHandler = async (req, res) => {
     }
 
     // query for exercises return all workouts that contain a specific exercise
-    if (req.query.s) {
-      const search = req.query.s as string;
+    if (search) {
       const filteredWorkouts = workouts.filter((workout) =>
         workout.exercises.some((exercise) => {
           const exerciseName = exercise.name.toLowerCase().replace(/\s+/g, "");
