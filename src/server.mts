@@ -15,14 +15,15 @@ export const app = express();
 //Middlewares
 // app.use(morgan("tiny"));
 app.use(limiter);
-app.use(
-  cors({
-    origin: frontendUrl,
-    methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
-    credentials: true,
-    optionsSuccessStatus: 204,
-  })
-);
+// app.use(
+//   cors({
+//     origin: frontendUrl,
+//     methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
+//     credentials: true,
+//     optionsSuccessStatus: 204,
+//   })
+// );
+app.use(cors());
 
 // app.use(logger);
 app.use(json());
