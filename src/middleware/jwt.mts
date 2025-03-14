@@ -20,7 +20,11 @@ export const authenticateJWT: RequestHandler = (req, res, next) => {
       req.user = decoded;
       next();
     } else {
-      res.status(403).json({ message: "Forbidden: Invalid or expired token" });
+      res
+        .status(403)
+        .json({
+          message: "Forbidden: Invalid or expired token. Try logging in again",
+        });
     }
   } else {
     res.status(401).json({ message: "Unauthorized: No token provided" });
