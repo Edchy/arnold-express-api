@@ -248,12 +248,15 @@ export const updateMongoWorkout: RequestHandler = async (req, res) => {
       return;
     }
     console.log(existingWorkout.isDefault);
-    // if (existingWorkout.userId !== userId) {
-    //  res.status(403).json({
-    //     message: "You don't have permission to update this workout",
-    //   });
-    //    return;
-    // }
+
+    // dont update default workouts (they are shared)
+    // todo: instead create a new workout and update that - add that to the user's workouts - remoe the old one..
+    if (existingWorkout.isDefault) {
+      res.status(403).json({
+        message: "Cannot update a default workout",
+      });
+      return;
+    }
 
     const updatedWorkout = await WorkoutModel.findByIdAndUpdate(
       id,
