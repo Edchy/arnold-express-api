@@ -6,7 +6,8 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "npx tsx watch src/server.mts",
     "build": "tsc",
-    "start": "node dist/server.mjs"
+    "start": "NODE_ENV=development node dist/server.mjs",
+    "start:prod": "NODE_ENV=production node dist/server.mjs"
   },
   "keywords": [],
   "author": "",
