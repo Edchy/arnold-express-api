@@ -87,4 +87,9 @@ const workoutSchema = new Schema<Workout>(
   }
 );
 
+// Update the updatedAt field when a workout is modified
+workoutSchema.pre("findOneAndUpdate", function () {
+  this.set({ updatedAt: new Date() });
+});
+
 export const WorkoutModel = model<Workout>("workout", workoutSchema);

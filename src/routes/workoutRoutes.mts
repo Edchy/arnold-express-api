@@ -4,6 +4,7 @@ import {
   createMongoWorkout,
   getMongoWorkoutById,
   deleteMongoWorkout,
+  updateMongoWorkout,
 } from "../controllers/workoutController.mjs";
 import { authenticateJWT } from "../middleware/jwt.mjs";
 
@@ -13,5 +14,6 @@ workoutRouter.get("/", getMongoWorkouts);
 workoutRouter.get("/:id", getMongoWorkoutById);
 workoutRouter.post("/", authenticateJWT, createMongoWorkout);
 workoutRouter.delete("/:id", authenticateJWT, deleteMongoWorkout);
+workoutRouter.put("/:id", authenticateJWT, updateMongoWorkout);
 
 export default workoutRouter;

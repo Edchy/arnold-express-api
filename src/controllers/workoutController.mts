@@ -1,8 +1,9 @@
-import { RequestHandler } from "express";
+import e, { RequestHandler } from "express";
 import { sendBadRequest } from "../utils/helpers.mjs";
 import { transformToWorkoutDto, WorkoutModel } from "../models/workout.mjs";
 import mongoose from "mongoose";
 import { UserModel } from "../models/user.mjs";
+import { Exercise, Workout } from "../models/workout.mjs";
 
 export const getMongoWorkouts: RequestHandler = async (req, res) => {
   const search = req.query.s as string;
@@ -230,5 +231,59 @@ export const deleteMongoWorkout: RequestHandler = async (req, res) => {
       message: "Failed to delete workout",
       error: (error as Error).message,
     });
+  }
+};
+
+// PUT
+export const updateMongoWorkout: RequestHandler = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const workoutData = req.body;
+    const userId = req.user.userId; // From JWT authentication middleware
+    console.log(req.params);
+
+    const existingWorkout = await WorkoutModel.findById(id);
+    if (!existingWorkout) {
+      res.status(404).json({ message: "Workout not found" });
+      return;
+    }
+    console.log(existingWorkout.isDefault);
+    // if (existingWorkout.userId !== userId) {
+    //  res.status(403).json({
+    //     message: "You don't have permission to update this workout",
+    //   });
+    //    return;
+    // }
+
+    const updatedWorkout = await WorkoutModel.findByIdAndUpdate(
+      id,
+      {
+        name: (workoutData as Workout).name,
+        exercises: (workoutData as Workout).exercises.map(
+          (exercise: Exercise) => ({
+            name: exercise.name,
+            sets: exercise.sets,
+            reps: exercise.reps,
+            weight: exercise.weight,
+          })
+        ),
+      },
+      { new: true } // Return the updated document
+    );
+
+    res.status(200).json(updatedWorkout);
+  } catch (error) {
+    console.error("Error updating workout:", error);
+
+    // Handle MongoDB validation errors
+    if (error instanceof mongoose.Error.ValidationError) {
+      res.status(400).json({
+        message: "Invalid workout data",
+        errors: Object.values(error.errors).map((err) => err.message),
+      });
+      return;
+    }
+
+    res.status(500).json({ message: "Failed to update workout" });
   }
 };
