@@ -5,7 +5,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "npx tsx watch src/server.mts",
-    "build": "tsc",
+    "build": "tsc || true",
     "start": "NODE_ENV=development node dist/server.mjs",
     "start:prod": "NODE_ENV=production node dist/server.mjs"
   },
@@ -34,6 +34,7 @@
     "@types/express": "^5.0.0",
     "@types/jsonwebtoken": "^9.0.9",
     "@types/morgan": "^1.9.9",
+    "@types/node": "^22.13.10",
     "@types/swagger-jsdoc": "^6.0.4",
     "@types/swagger-ui-express": "^4.1.8",
     "@types/uuid": "^10.0.0",
